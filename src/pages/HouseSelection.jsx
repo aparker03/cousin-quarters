@@ -1,10 +1,14 @@
 import houses from '../data/houses.json';
 import { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
 
 function HouseSelection() {
-  const { appUsername } = useOutletContext();
+  const { name } = useUser();
+  const username = name.trim();
+  const isMaster = username.toLowerCase() === 'alexis';
+
   const navigate = useNavigate();
 
   const [votes, setVotes] = useState(() => {
@@ -16,9 +20,6 @@ function HouseSelection() {
     const saved = localStorage.getItem('cq-votes');
     return Array.isArray(saved) ? [] : JSON.parse(saved) || [];
   });
-
-  const username = appUsername;
-  const isMaster = username?.trim().toLowerCase() === 'alexis';
 
   const [timeRemaining, setTimeRemaining] = useState('');
   const [votingClosed, setVotingClosed] = useState(false);

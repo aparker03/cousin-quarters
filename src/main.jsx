@@ -1,8 +1,10 @@
 import './index.css';
 import './App.css';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
+import { UserProvider } from './context/UserContext';
 
 import AppLayout from './layout/AppLayout';
 import Dashboard from './App.jsx';
@@ -15,24 +17,17 @@ import RentalResults from './pages/RentalResults.jsx';
 import Stiizy from './pages/Stiizy.jsx';
 
 function AppRouter() {
-  const [username, setUsername] = useState('');
-
-  useEffect(() => {
-    const saved = localStorage.getItem('cq-username');
-    if (saved) setUsername(saved);
-  }, []);
-
   return (
     <Routes>
-      <Route element={<AppLayout username={username} />}>
-        <Route path="/" element={<Dashboard appUsername={username} />} />
-        <Route path="/house" element={<HouseSelection appUsername={username} />} />
-        <Route path="/results" element={<Results appUsername={username} />} />
-        <Route path="/grocery" element={<GroceryList appUsername={username} />} />
-        <Route path="/budget" element={<Budget appUsername={username} />} />
-        <Route path="/rentals" element={<Rentals appUsername={username} />} />
-        <Route path="/rental-results" element={<RentalResults appUsername={username} />} />
-        <Route path="/stiizy" element={<Stiizy appUsername={username} />} />
+      <Route element={<AppLayout />}>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/house" element={<HouseSelection />} />
+        <Route path="/results" element={<Results />} />
+        <Route path="/grocery" element={<GroceryList />} />
+        <Route path="/budget" element={<Budget />} />
+        <Route path="/rentals" element={<Rentals />} />
+        <Route path="/rental-results" element={<RentalResults />} />
+        <Route path="/stiizy" element={<Stiizy />} />
       </Route>
     </Routes>
   );
@@ -40,8 +35,10 @@ function AppRouter() {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <AppRouter />
-    </BrowserRouter>
+    <UserProvider>
+      <BrowserRouter>
+        <AppRouter />
+      </BrowserRouter>
+    </UserProvider>
   </React.StrictMode>
 );

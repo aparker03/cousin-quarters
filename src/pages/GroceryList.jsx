@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
 
 function GroceryList() {
   const [item, setItem] = useState('');
@@ -9,7 +9,7 @@ function GroceryList() {
   const [showAlcohol, setShowAlcohol] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const [filter, setFilter] = useState('all');
-  const { appUsername } = useOutletContext();
+  const { name: appUsername } = useUser(); // ⬅ updated here
 
   const ALCOHOL_PASSWORD = 'cq2025';
 

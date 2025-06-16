@@ -1,27 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import NameLogin from '../components/NameLogin';
+import { useUser } from '../context/UserContext';
 
 function AppLayout() {
-  const [username, setUsername] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(() => {
-    // Remember sidebar open state
     const saved = localStorage.getItem('cq-sidebar-open');
     return saved === 'true';
   });
 
-  // Load username on mount
-  useEffect(() => {
-    const saved = localStorage.getItem('cq-username');
-    if (saved) setUsername(saved);
-  }, []);
+  const { name } = useUser();
 
-  // Store sidebar state persistently
   useEffect(() => {
     localStorage.setItem('cq-sidebar-open', sidebarOpen.toString());
   }, [sidebarOpen]);
 
-  // Helper to auto-close on mobile tab selection
   const handleMobileNavClick = () => {
     if (window.innerWidth < 768) {
       setSidebarOpen(false);
@@ -64,8 +57,8 @@ function AppLayout() {
 
       {/* Main Content */}
       <main className="flex-1 p-4 sm:p-6 md:p-10 overflow-auto max-w-full">
-        <NameLogin onNameChange={setUsername} />
-        <Outlet context={{ appUsername: username }} />
+        <NameLogin />
+        <Outlet />
       </main>
     </div>
   );

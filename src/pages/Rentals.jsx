@@ -1,10 +1,11 @@
 import rentals from '../data/rentals.json';
 import { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
 
 function Rentals() {
-  const { appUsername } = useOutletContext();
+  const { name: username } = useUser();
   const navigate = useNavigate();
 
   const [votes, setVotes] = useState(() => {
@@ -20,7 +21,6 @@ function Rentals() {
   const [votingClosed, setVotingClosed] = useState(false);
 
   const votingDeadline = new Date('2025-06-21T23:59:59');
-  const username = appUsername;
   const isMaster = username?.trim().toLowerCase() === 'alexis';
 
   useEffect(() => {
@@ -100,7 +100,7 @@ function Rentals() {
           </p>
 
           <div className="grid gap-6 md:grid-cols-2">
-            {rentals.map((car, index) => {
+            {rentals.map((car) => {
               const type = car.seats >= 7 ? 'seven' : 'five';
               const isSelected = votes[type] === car.id;
               const isLocked = locked && isSelected;

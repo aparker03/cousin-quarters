@@ -1,34 +1,28 @@
 import { useEffect, useState } from 'react';
+import { useUser } from '../context/UserContext';
 
-function NameLogin({ onNameChange }) {
-  const [name, setName] = useState('');
-  const [editing, setEditing] = useState(false);
+function NameLogin() {
+  const { name, setName } = useUser();
+  const [inputValue, setInputValue] = useState(name || '');
+  const [editing, setEditing] = useState(!name);
 
   useEffect(() => {
-    const saved = localStorage.getItem('cq-name');
-    if (saved) {
-      setName(saved);
-      if (onNameChange) onNameChange(saved);
-    } else {
-      setEditing(true);
-    }
-  }, []);
+    // Sync input with global context name
+    setInputValue(name);
+    if (!name) setEditing(true);
+  }, [name]);
 
   const saveName = () => {
-    const trimmed = name.trim();
+    const trimmed = inputValue.trim();
     if (trimmed) {
-      localStorage.setItem('cq-name', trimmed);
-      setName(trimmed);
+      setName(trimmed); // Updates context and localStorage
       setEditing(false);
-      if (onNameChange) onNameChange(trimmed); // notify parent immediately
     }
   };
 
   const clearName = () => {
-    localStorage.removeItem('cq-name');
     setName('');
     setEditing(true);
-    if (onNameChange) onNameChange(''); // force refresh logic
   };
 
   return (
@@ -38,8 +32,8 @@ function NameLogin({ onNameChange }) {
           <input
             type="text"
             placeholder="Enter your name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
             className="border border-gray-300 rounded px-2 py-1"
           />
           <button

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
 import houses from '../data/houses.json';
+import { useUser } from '../context/UserContext';
 
 function Results() {
+  const { name } = useUser(); // access if needed (optional now)
   const [votes, setVotes] = useState({});
   const totalVoters = 11;
-  const { appUsername } = useOutletContext();
 
   useEffect(() => {
     const saved = localStorage.getItem('cq-vote-counts');
