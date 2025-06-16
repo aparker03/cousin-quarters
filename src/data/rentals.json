@@ -1,0 +1,68 @@
+[
+  {
+    "id": "budget-7",
+    "nickname": "Grand Cherokee L",
+    "source": "Budget",
+    "seats": 7,
+    "bags": "1 large, 2 small",
+    "totalCost": 242.97,
+    "url": "https://www.budget.com/en/reservation#/vehicles",
+    "summary": "Spacious 7-seater SUV for group travel, ideal for road comfort and enough luggage room.",
+    "image": "/images/rentals/budget-7.jpg"
+  },
+  {
+    "id": "budget-5",
+    "nickname": "Toyota Camry",
+    "source": "Budget",
+    "seats": 5,
+    "bags": "2 large, 2 small",
+    "totalCost": 167.37,
+    "url": "https://www.budget.com/en/reservation#/vehicles",
+    "summary": "Reliable and roomy full-size sedan for the smaller car group.",
+    "image": "/images/rentals/budget-5.jpg"
+  },
+  {
+    "id": "enterprise-7",
+    "nickname": "Dodge Durango",
+    "source": "Enterprise",
+    "seats": 7,
+    "bags": "3 bags",
+    "totalCost": 376.02,
+    "url": "https://www.enterprise.com/en/reserve.html#car_select",
+    "summary": "Premium crossover with excellent space and driving comfort, fits 7.",
+    "image": "/images/rentals/enterprise-7.jpg"
+  },
+  {
+    "id": "enterprise-5",
+    "nickname": "Nissan Rogue",
+    "source": "Enterprise",
+    "seats": 5,
+    "bags": "4 bags",
+    "totalCost": 214.06,
+    "url": "https://www.enterprise.com/en/reserve.html#car_select",
+    "summary": "Versatile midsize SUV with ample cargo space and high fuel efficiency.",
+    "image": "/images/rentals/enterprise-5.jpg"
+  },
+  {
+    "id": "avis-7",
+    "nickname": "Grand Cherokee L",
+    "source": "Avis",
+    "seats": 7,
+    "bags": "1 large, 2 small",
+    "totalCost": 301.40,
+    "url": "https://www.avis.com/en/reservation#/vehicles",
+    "summary": "Spacious 7-seater SUV with comfort-first layout and decent luggage capacity.",
+    "image": "/images/rentals/avis-7.jpg"
+  },
+  {
+    "id": "avis-5",
+    "nickname": "Ford Edge",
+    "source": "Avis",
+    "seats": 5,
+    "bags": "1 large, 2 small",
+    "totalCost": 267.78,
+    "url": "https://www.avis.com/en/reservation#/vehicles",
+    "summary": "Standard SUV perfect for 5-person group with solid luggage flexibility.",
+    "image": "/images/rentals/avis-5.jpg"
+  }
+]

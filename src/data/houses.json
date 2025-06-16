@@ -1,0 +1,74 @@
+[
+  {
+    "id": "airbnb-1",
+    "nickname": "Ultimate Game Retreat",
+    "source": "Airbnb",
+    "url": "https://www.airbnb.com/rooms/866597025149039708",
+    "image": "/images/houses/airbnb-1.png",
+    "totalCost": 3520.58,
+    "klarna": "From $326/mo for 12 months (interest may apply)",
+    "perPersonCost": 320.05,
+    "summary": "Theater, hot tub, pool, game room, fire pit, chef kitchen. Sleeps multiple families. 15 mins from beach.",
+    "bedrooms": "5 bedrooms, 3,800 sq ft"
+  },
+  {
+    "id": "airbnb-2",
+    "nickname": "PB View Mansion",
+    "source": "Airbnb",
+    "url": "https://www.airbnb.com/rooms/645658124059113222",
+    "image": "/images/houses/airbnb-2.png",
+    "totalCost": 3298.82,
+    "klarna": "From $306/mo for 12 months (interest may apply)",
+    "perPersonCost": 299.89,
+    "summary": "Panoramic views, hot tub, outdoor bar, attic game lounge, 5,000 sq ft near beach, SeaWorld, zoo.",
+    "bedrooms": "5 bedrooms, multiple lounges"
+  },
+  {
+    "id": "airbnb-3",
+    "nickname": "Spacious Family Pad",
+    "source": "Airbnb",
+    "url": "https://www.airbnb.com/rooms/1379296728564964973",
+    "image": "/images/houses/airbnb-3.png",
+    "totalCost": 2640.12,
+    "klarna": "From $245/mo for 12 months (interest may apply)",
+    "perPersonCost": 240.01,
+    "summary": "Backyard, hot tub, gym, game room, 85\" TVs, sleeps 15. Near downtown, zoo, and beach.",
+    "bedrooms": "5 bedrooms, 3 baths"
+  },
+  {
+    "id": "vrbo-1",
+    "nickname": "ZenTrio Villas",
+    "source": "Vrbo",
+    "url": "https://www.vrbo.com/3527065",
+    "image": "/images/houses/vrbo-1.png",
+    "totalCost": 3388,
+    "klarna": "6-month: $628.42/mo or 18-month: $235.21/mo (APR varies)",
+    "perPersonCost": 307.09,
+    "summary": "Three houses in one! 9 bedrooms, 7.5 baths, perfect for reunions. Minutes to beach and attractions.",
+    "bedrooms": "9 bedrooms, 7.5 baths"
+  },
+  {
+    "id": "vrbo-2",
+    "nickname": "Downtown Oasis",
+    "source": "Vrbo",
+    "url": "https://www.vrbo.com/4585005",
+    "image": "/images/houses/vrbo-2.png",
+    "totalCost": 2785,
+    "klarna": "6-month: $515.98/mo or 24-month: $150.10/mo (APR varies)",
+    "perPersonCost": 253.18,
+    "summary": "Downtown San Diego. Gated yard, 4 bedrooms, 4 bathrooms, pet-friendly, garage parking, fast Wi-Fi.",
+    "bedrooms": "4 bedrooms, 4 baths"
+  },
+  {
+    "id": "vrbo-3",
+    "nickname": "Beachline Luxury Stay",
+    "source": "Vrbo",
+    "url": "https://www.vrbo.com/3179775",
+    "image": "/images/houses/vrbo-3.png",
+    "totalCost": 3015,
+    "klarna": "6-month: $558.60/mo or 24-month: $162.50/mo (APR varies)",
+    "perPersonCost": 274.09,
+    "summary": "Spacious, modern home with amenities for work and play. Great location. Sleeps large groups.",
+    "bedrooms": "Multiple bedrooms, 4+ baths"
+  }
+]
