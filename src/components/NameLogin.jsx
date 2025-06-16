@@ -5,7 +5,7 @@ function NameLogin({ onNameChange }) {
   const [editing, setEditing] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('cq-username');
+    const saved = localStorage.getItem('cq-name');
     if (saved) {
       setName(saved);
       if (onNameChange) onNameChange(saved);
@@ -17,7 +17,7 @@ function NameLogin({ onNameChange }) {
   const saveName = () => {
     const trimmed = name.trim();
     if (trimmed) {
-      localStorage.setItem('cq-username', trimmed);
+      localStorage.setItem('cq-name', trimmed);
       setName(trimmed);
       setEditing(false);
       if (onNameChange) onNameChange(trimmed); // notify parent immediately
@@ -25,7 +25,7 @@ function NameLogin({ onNameChange }) {
   };
 
   const clearName = () => {
-    localStorage.removeItem('cq-username');
+    localStorage.removeItem('cq-name');
     setName('');
     setEditing(true);
     if (onNameChange) onNameChange(''); // force refresh logic
