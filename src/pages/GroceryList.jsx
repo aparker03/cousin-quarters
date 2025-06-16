@@ -115,7 +115,7 @@ function GroceryList() {
   });
 
   return (
-    <div className="max-w-xl mx-auto mt-8 p-4 bg-white rounded-xl shadow-md">
+    <div className="max-w-3xl mx-auto mt-8 p-4 bg-white rounded-xl shadow-md overflow-hidden">
       <h2 className="text-2xl font-bold mb-2 text-center">🛒 Grocery List</h2>
       <p className="text-sm text-center text-gray-600 mb-4">
         Add must-haves or fun extras for the trip. Quantity optional.
@@ -127,7 +127,7 @@ function GroceryList() {
 
       {!locked && (
         <div className="mb-4 space-y-2">
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <input
               type="text"
               value={item}
@@ -140,7 +140,7 @@ function GroceryList() {
               min="1"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
-              className="w-20 border border-gray-300 p-2 rounded"
+              className="w-24 border border-gray-300 p-2 rounded"
             />
             <button
               onClick={handleAdd}
@@ -152,7 +152,7 @@ function GroceryList() {
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-2 text-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 text-sm gap-2">
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
@@ -199,49 +199,51 @@ function GroceryList() {
         </div>
       )}
 
-      <ul className="space-y-2">
-        {filteredList.map((item, index) => {
-          const cat = getCategory(item.name);
-          const isBought = item.bought;
+      <div className="max-h-[60vh] overflow-y-auto">
+        <ul className="space-y-2">
+          {filteredList.map((item, index) => {
+            const cat = getCategory(item.name);
+            const isBought = item.bought;
 
-          return (
-            <li
-              key={index}
-              className={`flex justify-between items-center px-4 py-2 rounded ${
-                isBought ? 'bg-gray-200 opacity-70 line-through' : 'bg-gray-100'
-              }`}
-            >
-              <div className="flex items-center gap-2 w-full">
-                <input
-                  type="checkbox"
-                  checked={isBought}
-                  onChange={() => handleToggleBought(index)}
-                  className="h-4 w-4"
-                />
-                <span>{getEmoji(cat)}</span>
-                <span className="flex-1">{item.name}</span>
-                <span className="text-xs text-gray-500">x{item.quantity}</span>
-                <span
-                  className={`text-xs px-2 py-0.5 rounded-full ${getBadgeStyle(cat)}`}
-                >
-                  {cat}
-                </span>
-                {!locked && (
-                  <button
-                    onClick={() => handleDelete(index)}
-                    className="text-red-500 hover:text-red-700 ml-2"
+            return (
+              <li
+                key={index}
+                className={`flex justify-between items-center px-4 py-2 rounded ${
+                  isBought ? 'bg-gray-200 opacity-70 line-through' : 'bg-gray-100'
+                }`}
+              >
+                <div className="flex items-center gap-2 w-full">
+                  <input
+                    type="checkbox"
+                    checked={isBought}
+                    onChange={() => handleToggleBought(index)}
+                    className="h-4 w-4"
+                  />
+                  <span>{getEmoji(cat)}</span>
+                  <span className="flex-1 break-words">{item.name}</span>
+                  <span className="text-xs text-gray-500">x{item.quantity}</span>
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded-full ${getBadgeStyle(cat)}`}
                   >
-                    ✕
-                  </button>
-                )}
-              </div>
-            </li>
-          );
-        })}
-        {filteredList.length === 0 && (
-          <li className="text-center text-gray-500">No items to display.</li>
-        )}
-      </ul>
+                    {cat}
+                  </span>
+                  {!locked && (
+                    <button
+                      onClick={() => handleDelete(index)}
+                      className="text-red-500 hover:text-red-700 ml-2"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+          {filteredList.length === 0 && (
+            <li className="text-center text-gray-500">No items to display.</li>
+          )}
+        </ul>
+      </div>
     </div>
   );
 }
