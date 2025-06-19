@@ -1,27 +1,31 @@
+// src/pages/Rentals.jsx
 import rentals from '../data/rentals.json';
 import { useState, useEffect } from 'react';
-import confetti from 'canvas-confetti';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
+import { useRentalVotes } from '../hooks/useRentalVotes';
+
+const votingDeadline = new Date('2025-06-21T23:59:59');
 
 function Rentals() {
-  const { name: username } = useUser();
+  const { name } = useUser();
+  const username = name?.trim().toLowerCase() || '';
   const navigate = useNavigate();
 
-  const [votes, setVotes] = useState(() => {
-    const saved = localStorage.getItem('cq-rental-votes');
-    return saved ? JSON.parse(saved) : {};
-  });
-
-  const [locked, setLocked] = useState(() => {
-    return localStorage.getItem('cq-rental-locked') === 'true';
-  });
+  const {
+    voted,
+    votes,
+    castVote,
+    handleResetAllVotes,
+    resetAll,
+    isMaster,
+    allowedUsers,
+    locked,
+    setLocked
+  } = useRentalVotes(username);
 
   const [timeRemaining, setTimeRemaining] = useState('');
   const [votingClosed, setVotingClosed] = useState(false);
-
-  const votingDeadline = new Date('2025-06-21T23:59:59');
-  const isMaster = username?.trim().toLowerCase() === 'alexis';
 
   useEffect(() => {
     const updateCountdown = () => {
@@ -45,37 +49,25 @@ function Rentals() {
     return () => clearInterval(timer);
   }, [navigate]);
 
-  useEffect(() => {
-    localStorage.setItem('cq-rental-votes', JSON.stringify(votes));
-  }, [votes]);
-
-  const handleVote = (car) => {
-    if (locked || votingClosed) return;
-
-    const type = car.seats >= 7 ? 'seven' : 'five';
-    const updatedVotes = {
-      ...votes,
-      [type]: votes[type] === car.id ? null : car.id,
-    };
-
-    setVotes(updatedVotes);
-
-    confetti({
-      particleCount: 60,
-      spread: 80,
-      origin: { y: 0.6 },
-    });
-  };
-
   const handleLockVote = () => {
     const confirmed = window.confirm(
       'Are you sure? Once you lock your vote, you won’t be able to change it.'
     );
     if (confirmed) {
       setLocked(true);
-      localStorage.setItem('cq-rental-locked', 'true');
     }
   };
+
+  const handleVote = (car) => {
+    if (locked || votingClosed || !username || !allowedUsers.includes(username)) return;
+    castVote(car, votingClosed);
+  };
+
+  const sortedRentals = [...rentals].sort((a, b) => {
+    const aType = a.seats >= 7 ? 'seven' : 'five';
+    const bType = b.seats >= 7 ? 'seven' : 'five';
+    return (votes[bType]?.[b.id] || 0) - (votes[aType]?.[a.id] || 0);
+  });
 
   return (
     <div className="max-w-6xl mx-auto mt-8 p-4">
@@ -88,10 +80,22 @@ function Rentals() {
         </div>
       ) : (
         <>
+          {!allowedUsers.includes(username) && (
+            <div className="bg-red-100 border border-red-300 text-red-700 p-4 rounded mb-6">
+              <strong>Access restricted:</strong> Your name is not on the voting list.
+            </div>
+          )}
+
           {isMaster && (
             <div className="bg-blue-100 border border-blue-300 text-blue-800 p-4 rounded mb-6 text-sm">
-              <strong>Master access:</strong> You have control features here.
-              (Override coming soon.)
+              <strong>Master access:</strong> You can reset all votes.
+              <br />
+              <button
+                onClick={handleResetAllVotes}
+                className="mt-2 px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700"
+              >
+                Reset All Votes
+              </button>
             </div>
           )}
 
@@ -100,10 +104,12 @@ function Rentals() {
           </p>
 
           <div className="grid gap-6 md:grid-cols-2">
-            {rentals.map((car) => {
+            {sortedRentals.map((car) => {
               const type = car.seats >= 7 ? 'seven' : 'five';
-              const isSelected = votes[type] === car.id;
+              const isSelected = voted[type] === car.id;
               const isLocked = locked && isSelected;
+              const hasVoted = voted[type] !== null && voted[type] !== undefined;
+              const disableVote = votingClosed || locked || !allowedUsers.includes(username);
 
               return (
                 <div
@@ -115,11 +121,10 @@ function Rentals() {
                   <img
                     src={car.image}
                     alt={car.nickname}
+                    loading="lazy"
                     className="rounded-md mb-3 w-full h-40 object-cover"
                   />
-                  <h2 className="text-lg font-semibold text-purple-800">
-                    {car.nickname}
-                  </h2>
+                  <h2 className="text-lg font-semibold text-purple-800">{car.nickname}</h2>
                   <p className="text-sm text-gray-600">{car.summary}</p>
                   <p className="text-sm mt-1">
                     <strong>Seats:</strong> {car.seats} | <strong>Bags:</strong> {car.bags}
@@ -139,19 +144,22 @@ function Rentals() {
                   <div className="mt-3 flex justify-between items-center">
                     <button
                       onClick={() => handleVote(car)}
-                      disabled={locked || votingClosed}
-                      className={`btn-primary ${
-                        isSelected ? 'bg-gray-400 hover:bg-gray-500' : ''
-                      }`}
+                      disabled={disableVote}
+                      className={`btn-primary ${isSelected ? 'bg-gray-400 hover:bg-gray-500' : ''}`}
                     >
                       {votingClosed
                         ? 'Voting Closed'
                         : locked
-                        ? 'Locked'
+                        ? isSelected
+                          ? 'Locked'
+                          : 'Locked'
                         : isSelected
                         ? 'Selected'
                         : 'Vote'}
                     </button>
+                    <span className="text-sm text-gray-600">
+                      Votes: {votes[type]?.[car.id] || 0}
+                    </span>
                   </div>
                 </div>
               );
