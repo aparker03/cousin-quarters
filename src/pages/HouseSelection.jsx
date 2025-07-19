@@ -17,7 +17,7 @@ function HouseSelection() {
   const userKey = username.toLowerCase();
   const navigate = useNavigate();
 
-  const [paymentMode, setPaymentMode] = useState('klarna'); // 'full' or 'klarna'
+  const [paymentMode, setPaymentMode] = useState('klarna');
   const [months, setMonths] = useState(12);
 
   const { timeRemaining, votingClosed } = useCountdown(votingDeadline, '/results');
@@ -140,8 +140,11 @@ function HouseSelection() {
           <div className="grid gap-6 md:grid-cols-2">
             {sortedHouses.map((house) => {
               const topVotes = getTopVoteCount();
+
+              console.log('🏠 House:', house.id, '🗳️ Your votes:', votedIds);
+
               const isTop = (votes[house.id] || 0) === topVotes && topVotes > 0;
-              const isVoted = Array.isArray(votedIds) && votedIds.includes(house.id);
+              const isVoted = Array.isArray(votedIds) && votedIds.includes(String(house.id));
 
               return (
                 <div
@@ -198,15 +201,24 @@ function HouseSelection() {
                           : ''
                       }`}
                       onClick={async () => {
-                        const alreadyVoted = votedIds.includes(house.id);
-                        await handleVote(house.id, votingClosed);
+                        try {
+                          const alreadyVoted = votedIds.includes(house.id);
+                          await handleVote(house.id, votingClosed, votedIds);
 
-                        if (!alreadyVoted && !votingClosed) {
-                          confetti({
-                            particleCount: 80,
-                            spread: 70,
-                            origin: { y: 0.6 }
-                          });
+                          setTimeout(() => {
+                            console.log('✅ Refreshed votedIds after vote:', votedIds);
+                          }, 500);
+
+                          if (!alreadyVoted && !votingClosed) {
+                            confetti({
+                              particleCount: 80,
+                              spread: 70,
+                              origin: { y: 0.6 }
+                            });
+                          }
+                        } catch (err) {
+                          console.error('❌ Vote failed:', err);
+                          alert('Something went wrong while submitting your vote.');
                         }
                       }}
                       disabled={votingClosed || !allowedUsers.includes(userKey)}
