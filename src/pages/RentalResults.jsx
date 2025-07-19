@@ -5,7 +5,7 @@ import { useRentalVotes } from '../hooks/useRentalVotes';
 import { useState } from 'react';
 
 function RentalResults() {
-  const { name } = useUser();
+  const { name: normalizedName, originalName } = useUser();;
   const username = name?.trim().toLowerCase() || '';
   const {
     votes,

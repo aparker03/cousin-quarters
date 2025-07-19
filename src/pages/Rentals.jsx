@@ -8,7 +8,7 @@ import { useRentalVotes } from '../hooks/useRentalVotes';
 const votingDeadline = new Date('2025-06-21T23:59:59');
 
 function Rentals() {
-  const { name } = useUser();
+  const { name: normalizedName, originalName } = useUser();;
   const username = name?.trim().toLowerCase() || '';
   const navigate = useNavigate();
 

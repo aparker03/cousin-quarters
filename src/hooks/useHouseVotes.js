@@ -6,6 +6,7 @@ import {
   clearAllUserVotes,
 } from '../firebase/voteService';
 
+// ✅ Full lowercase allowed users
 export const allowedUsers = [
   'alexis', 'jay', 'eric', 'sania', 'kendall',
   'awan', 'andreas', 'alaysia', 'carmen',
@@ -16,9 +17,11 @@ const userAliasMap = {
   cita: 'carmen',
 };
 
+// ✅ Normalize input name
 export const normalizeUserKey = (name) => {
-  const raw = name?.trim().toLowerCase();
-  return userAliasMap[raw] || raw || '';
+  if (!name || typeof name !== 'string') return '';
+  const raw = name.trim().toLowerCase();
+  return userAliasMap[raw] || raw;
 };
 
 const getLocalKey = (userKey) => `house-vote-${userKey}`;
@@ -35,43 +38,49 @@ export const useHouseVotes = (name) => {
   useEffect(() => {
     if (!userKey) return;
 
-    // Load fallback from localStorage
+    // Load cached votes
     const cached = localStorage.getItem(getLocalKey(userKey));
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
         if (Array.isArray(parsed)) {
-          setVoted(parsed);
-          votedRef.current = parsed;
+          setVoted(parsed.map(String));
+          votedRef.current = parsed.map(String);
         }
-      } catch {}
+      } catch (err) {
+        console.warn('⚠️ Failed to parse local vote cache:', err);
+      }
     }
 
+    // ✅ Subscribe and count normalized votes
     const unsubscribe = subscribeToVotes('house', (data) => {
-      const historyByUser = {};
-      const voteCounts = {};
+      console.log("📡 Firebase vote snapshot:", data);
 
-      for (const [user, history] of Object.entries(data || {})) {
+      const voteCounts = {};
+      const historyByUser = {};
+
+      for (const [rawUser, history] of Object.entries(data || {})) {
+        const normUser = normalizeUserKey(rawUser);
         if (!Array.isArray(history) || history.length === 0) continue;
 
-        const latest = history[history.length - 1];
-        if (!('ids' in latest)) continue;
-
+        const latest = history.at(-1);
+        if (!Array.isArray(latest?.ids)) continue;
 
         latest.ids.forEach((id) => {
-          voteCounts[id] = (voteCounts[id] || 0) + 1;
+          const strId = String(id);
+          voteCounts[strId] = (voteCounts[strId] || 0) + 1;
         });
 
-        historyByUser[user] = history;
+        historyByUser[normUser] = history;
       }
 
       setVotes(voteCounts);
       setVoteHistory(historyByUser[userKey] || []);
 
       const last = historyByUser[userKey]?.at(-1);
-      const ids = Array.isArray(last?.ids) ? last.ids : [];
+      const ids = Array.isArray(last?.ids) ? last.ids.map(String) : [];
 
-      // Sync state + cache
+      console.log("🧠 Final parsed votedIds for", userKey, "→", ids);
       setVoted(ids);
       votedRef.current = ids;
       localStorage.setItem(getLocalKey(userKey), JSON.stringify(ids));
@@ -81,16 +90,36 @@ export const useHouseVotes = (name) => {
   }, [userKey]);
 
   const handleVote = async (houseId, votingClosed) => {
-    if (votingClosed || !allowedUsers.includes(userKey)) return;
+    if (votingClosed || !allowedUsers.includes(userKey)) {
+      console.warn('❌ Vote blocked — closed or unauthorized:', {
+        userKey,
+        votingClosed,
+      });
+      return;
+    }
 
-    const alreadyVoted = voted.includes(houseId);
+    const idStr = String(houseId);
+    const alreadyVoted = voted.includes(idStr);
     const updated = alreadyVoted
-      ? voted.filter((id) => id !== houseId)
-      : [...voted, houseId];
+      ? voted.filter((id) => id !== idStr)
+      : [...voted, idStr];
 
-    setVoted(updated); // UI feedback
+    console.log('🔁 Submitting vote:', {
+      userKey,
+      updated,
+      alreadyVoted,
+    });
+
+    setVoted(updated);
     votedRef.current = updated;
     localStorage.setItem(getLocalKey(userKey), JSON.stringify(updated));
+
+    // Don't submit empty vote arrays
+    if (updated.length === 0) {
+      console.log('🧹 Skipping write — empty vote');
+      return;
+    }
+
     await setUserVote('house', userKey, { ids: updated });
   };
 
@@ -102,10 +131,8 @@ export const useHouseVotes = (name) => {
     setVoted([]);
     setVoteHistory([]);
 
-    // Clear localStorage for all users
     allowedUsers.forEach((u) => {
-      const key = getLocalKey(u);
-      localStorage.removeItem(key);
+      localStorage.removeItem(getLocalKey(u));
     });
   };
 

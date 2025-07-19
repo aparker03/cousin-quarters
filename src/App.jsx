@@ -1,7 +1,7 @@
 import { useUser } from './context/UserContext';
 
 function App() {
-  const { name } = useUser();
+  const { name: normalizedName, originalName } = useUser();;
   const displayName = name.trim();
   const isAlexis = displayName.toLowerCase() === 'alexis';
 

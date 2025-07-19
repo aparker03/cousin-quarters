@@ -9,7 +9,7 @@ function AppLayout() {
     return saved === 'true';
   });
 
-  const { name } = useUser();
+  const { name: normalizedName, originalName } = useUser();;
 
   useEffect(() => {
     localStorage.setItem('cq-sidebar-open', sidebarOpen.toString());

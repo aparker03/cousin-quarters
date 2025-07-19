@@ -1,5 +1,5 @@
 import houses from '../data/houses.json';
-import { useUser } from '../context/UserContext';
+import { useNormalizedUser } from '../hooks/useNormalizedUser';
 import { useCountdown } from '../hooks/useCountdown';
 import { useHouseVotes } from '../hooks/useHouseVotes';
 import { useState, useEffect } from 'react';
@@ -11,12 +11,8 @@ const apr = 0.0599; // ~5.99% Klarna APR
 const monthlyRate = apr / 12;
 
 function HouseSelection() {
-  const { name } = useUser();
-  const rawName = name.trim();
-  const username = rawName.toLowerCase() === 'cita' ? 'carmen' : rawName;
-  const userKey = username.toLowerCase();
+  const { name: userKey, originalName } = useNormalizedUser(); // name = normalized
   const navigate = useNavigate();
-
   const [paymentMode, setPaymentMode] = useState('klarna');
   const [months, setMonths] = useState(12);
 
@@ -28,7 +24,7 @@ function HouseSelection() {
     handleResetAllVotes,
     isMaster,
     allowedUsers
-  } = useHouseVotes(username);
+  } = useHouseVotes(userKey);
 
   if (!Array.isArray(allowedUsers) || !votes) {
     return <div className="p-4 text-center text-gray-600">Loading vote data...</div>;
@@ -37,10 +33,10 @@ function HouseSelection() {
   const numUsers = allowedUsers.length;
 
   useEffect(() => {
-    if (votingClosed && username && userKey !== 'alexis') {
+    if (votingClosed && userKey && userKey !== 'alexis') {
       navigate('/results');
     }
-  }, [votingClosed, username, userKey, navigate]);
+  }, [votingClosed, userKey, navigate]);
 
   const getPerPersonCost = (total) => {
     if (paymentMode === 'klarna') {
@@ -112,7 +108,7 @@ function HouseSelection() {
         )}
       </div>
 
-      {!username ? (
+      {!userKey ? (
         <div className="bg-yellow-100 border border-yellow-300 text-yellow-800 p-4 rounded mb-6">
           <strong>Enter your name</strong> to vote and see the house options.
         </div>

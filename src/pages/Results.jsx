@@ -6,7 +6,7 @@ import { getVotes } from '../firebase/voteService';
 import { allowedUsers, normalizeUserKey } from '../hooks/useHouseVotes';
 
 function Results() {
-  const { name } = useUser();
+  const { name: normalizedName, originalName } = useUser();;
   const userKey = normalizeUserKey(name);
   const isMaster = userKey === 'alexis';
 
