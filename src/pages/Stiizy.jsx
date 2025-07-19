@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+import { ref, onValue, set } from 'firebase/database';
+import { database } from '../firebase/config';
+import { useUser } from '../context/UserContext';
 
 function Stiizy() {
   const [item, setItem] = useState('');
@@ -6,28 +9,43 @@ function Stiizy() {
   const [locked, setLocked] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
+  const { name: appUsername } = useUser();
 
-  const PASSWORD = 'cq2025'; // Change this if needed
+  const PASSWORD = 'cq2025';
+  const userKey = appUsername?.trim().toLowerCase() || '';
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem('cq-stiizy-requests')) || [];
+    if (!userKey) return;
+
+    const reqRef = ref(database, `lists/stiizy/${userKey}`);
+    const unsubscribe = onValue(reqRef, (snapshot) => {
+      const data = snapshot.val() || [];
+      setRequests(data);
+    });
+
     const lockedStatus = localStorage.getItem('cq-rental-locked') === 'true';
-    setRequests(saved);
     setLocked(lockedStatus);
-  }, []);
+
+    return () => unsubscribe();
+  }, [userKey]);
+
+  const updateRequests = (newList) => {
+    setRequests(newList);
+    if (userKey) {
+      set(ref(database, `lists/stiizy/${userKey}`), newList);
+    }
+  };
 
   const handleAdd = () => {
     if (!item.trim()) return;
     const updated = [...requests, item.trim()];
-    setRequests(updated);
-    localStorage.setItem('cq-stiizy-requests', JSON.stringify(updated));
+    updateRequests(updated);
     setItem('');
   };
 
   const handleDelete = (index) => {
     const updated = requests.filter((_, i) => i !== index);
-    setRequests(updated);
-    localStorage.setItem('cq-stiizy-requests', JSON.stringify(updated));
+    updateRequests(updated);
   };
 
   const handlePasswordSubmit = (e) => {

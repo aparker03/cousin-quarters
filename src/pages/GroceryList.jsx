@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { ref, onValue, set } from 'firebase/database';
+import { database } from '../firebase/config';
 import { useUser } from '../context/UserContext';
 
 function GroceryList() {
@@ -9,20 +11,32 @@ function GroceryList() {
   const [showAlcohol, setShowAlcohol] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const [filter, setFilter] = useState('all');
-  const { name: appUsername } = useUser(); // ⬅ updated here
+  const { name: appUsername } = useUser();
 
   const ALCOHOL_PASSWORD = 'cq2025';
 
+  const userKey = appUsername?.trim().toLowerCase() || '';
+
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem('cq-grocery-list')) || [];
+    if (!userKey) return;
+
+    const listRef = ref(database, `lists/grocery/${userKey}`);
+    const unsubscribe = onValue(listRef, (snapshot) => {
+      const data = snapshot.val() || [];
+      setList(data);
+    });
+
     const lockedStatus = localStorage.getItem('cq-rental-locked') === 'true';
-    setList(saved);
     setLocked(lockedStatus);
-  }, []);
+
+    return () => unsubscribe();
+  }, [userKey]);
 
   const updateList = (newList) => {
     setList(newList);
-    localStorage.setItem('cq-grocery-list', JSON.stringify(newList));
+    if (userKey) {
+      set(ref(database, `lists/grocery/${userKey}`), newList);
+    }
   };
 
   const handleAdd = () => {
@@ -45,8 +59,7 @@ function GroceryList() {
 
   const handleExport = () => {
     const csv = list
-      .map((item) => `"${item.name}","${item.quantity}","${item.bought ? 'Yes' : 'No'}"`)
-      .join('\n');
+      .map((item) => `"${item.name}","${item.quantity}","${item.bought ? 'Yes' : 'No'}"`).join('\n');
     const blob = new Blob([`Item,Quantity,Bought\n${csv}`], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const temp = document.createElement('a');

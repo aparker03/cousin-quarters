@@ -1,28 +1,42 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useUser } from '../context/UserContext';
+import { normalizeUserKey } from '../hooks/useHouseVotes';
 
 function NameLogin() {
-  const { name, setName } = useUser();
-  const [inputValue, setInputValue] = useState(name || '');
+  const { name, setName, originalName, setOriginalName } = useUser();
+  const [inputValue, setInputValue] = useState('');
   const [editing, setEditing] = useState(!name);
+  const inputRef = useRef(null);
 
   useEffect(() => {
-    // Sync input with global context name
-    setInputValue(name);
+    setInputValue(originalName || name || '');
     if (!name) setEditing(true);
-  }, [name]);
+  }, [name, originalName]);
+
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [editing]);
 
   const saveName = () => {
     const trimmed = inputValue.trim();
     if (trimmed) {
-      setName(trimmed); // Updates context and localStorage
+      const normalized = normalizeUserKey(trimmed);
+      setName(normalized);          // for logic
+      setOriginalName(trimmed);     // for display
       setEditing(false);
     }
   };
 
   const clearName = () => {
     setName('');
+    setOriginalName('');
     setEditing(true);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') saveName();
   };
 
   return (
@@ -30,10 +44,12 @@ function NameLogin() {
       {editing ? (
         <div className="flex gap-2 w-full sm:w-auto flex-wrap">
           <input
+            ref={inputRef}
             type="text"
             placeholder="Enter your name"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
             className="border border-gray-300 rounded px-2 py-1"
           />
           <button
@@ -46,8 +62,8 @@ function NameLogin() {
       ) : (
         <div className="flex flex-col sm:flex-row gap-2 sm:items-center w-full sm:w-auto justify-between">
           <span>
-            👋 Welcome, <strong>{name}</strong>
-            {name.toLowerCase() === 'alexis' && (
+            👋 Welcome, <strong>{originalName || name}</strong>
+            {name === 'alexis' && (
               <span className="ml-1 text-green-700">(The Don)</span>
             )}
           </span>

@@ -1,28 +1,27 @@
+// src/pages/Results.jsx
 import { useEffect, useState } from 'react';
 import houses from '../data/houses.json';
 import { useUser } from '../context/UserContext';
 import { getVotes } from '../firebase/voteService';
+import { allowedUsers, normalizeUserKey } from '../hooks/useHouseVotes';
 
 function Results() {
   const { name } = useUser();
-  const isMaster = name?.trim().toLowerCase() === 'alexis';
+  const userKey = normalizeUserKey(name);
+  const isMaster = userKey === 'alexis';
 
   const [votes, setVotes] = useState({});
   const [voteHistory, setVoteHistory] = useState({});
   const [voterSummary, setVoterSummary] = useState({ voters: [], missing: [] });
 
-  const KNOWN_USERS = [
-    'alexis', 'jay', 'eric', 'sania', 'kendall',
-    'delaney', 'awan', 'cita', 'jaden', 'yazmere'
-  ];
-
   useEffect(() => {
     const fetchVotes = async () => {
-      const snapshot = await getVotes('house');
+      const raw = await getVotes('house');
+
       const normalized = Object.fromEntries(
-        Object.entries(snapshot).map(([user, voteArray]) => [
-          user.trim().toLowerCase(),
-          Array.isArray(voteArray) ? voteArray : [voteArray]
+        Object.entries(raw).map(([user, history]) => [
+          normalizeUserKey(user),
+          Array.isArray(history) ? history : []
         ])
       );
 
@@ -44,14 +43,14 @@ function Results() {
       setVoteHistory(normalized);
 
       const voters = Object.keys(latestVotes);
-      const missing = KNOWN_USERS.filter((u) => !voters.includes(u));
+      const missing = allowedUsers.filter((u) => !voters.includes(u));
       setVoterSummary({ voters, missing });
     };
 
     fetchVotes();
   }, []);
 
-  const getPerPersonCost = (total) => (total / KNOWN_USERS.length).toFixed(2);
+  const getPerPersonCost = (total) => (total / allowedUsers.length).toFixed(2);
 
   const sortedHouses = [...houses].sort(
     (a, b) => (votes[b.id] || 0) - (votes[a.id] || 0)
@@ -71,7 +70,9 @@ function Results() {
                 <li key={idx}>
                   🏡 {entry.ids?.join(', ') || '—'} |{' '}
                   <span className="text-gray-500">
-                    {new Date(entry.timestamp).toLocaleString()}
+                    {entry.timestamp
+                      ? new Date(entry.timestamp).toLocaleString()
+                      : 'No timestamp'}
                   </span>
                 </li>
               ))}
@@ -90,7 +91,7 @@ function Results() {
         <>
           <div className="mb-6 bg-blue-50 border border-blue-300 p-4 rounded text-sm text-blue-800">
             <h2 className="text-base font-bold mb-2">📋 Voter Summary (Master Only)</h2>
-            <p><strong>Total voted:</strong> {voterSummary.voters.length} / {KNOWN_USERS.length}</p>
+            <p><strong>Total voted:</strong> {voterSummary.voters.length} / {allowedUsers.length}</p>
             <p><strong>Voted:</strong> {voterSummary.voters.join(', ') || 'None yet'}</p>
             <p><strong>Still missing:</strong> {voterSummary.missing.join(', ') || 'All voted 🎉'}</p>
           </div>

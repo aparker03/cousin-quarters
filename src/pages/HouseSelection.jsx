@@ -1,29 +1,61 @@
-// src/pages/HouseSelection.jsx
 import houses from '../data/houses.json';
 import { useUser } from '../context/UserContext';
 import { useCountdown } from '../hooks/useCountdown';
 import { useHouseVotes } from '../hooks/useHouseVotes';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import confetti from 'canvas-confetti';
 
-const votingDeadline = new Date('2025-06-21T23:59:59');
+const votingDeadline = new Date('2025-07-21T23:59:59');
+const apr = 0.0599; // ~5.99% Klarna APR
+const monthlyRate = apr / 12;
 
 function HouseSelection() {
   const { name } = useUser();
-  const username = name.trim();
+  const rawName = name.trim();
+  const username = rawName.toLowerCase() === 'cita' ? 'carmen' : rawName;
+  const userKey = username.toLowerCase();
+  const navigate = useNavigate();
+
+  const [paymentMode, setPaymentMode] = useState('klarna'); // 'full' or 'klarna'
+  const [months, setMonths] = useState(12);
 
   const { timeRemaining, votingClosed } = useCountdown(votingDeadline, '/results');
   const {
     votes,
     votedIds,
-    voteHistory,
-    allVoteHistories,
     handleVote,
     handleResetAllVotes,
     isMaster,
     allowedUsers
   } = useHouseVotes(username);
 
-  const userKey = username.toLowerCase();
-  const getPerPersonCost = (total) => (total / allowedUsers.length).toFixed(2);
+  if (!Array.isArray(allowedUsers) || !votes) {
+    return <div className="p-4 text-center text-gray-600">Loading vote data...</div>;
+  }
+
+  const numUsers = allowedUsers.length;
+
+  useEffect(() => {
+    if (votingClosed && username && userKey !== 'alexis') {
+      navigate('/results');
+    }
+  }, [votingClosed, username, userKey, navigate]);
+
+  const getPerPersonCost = (total) => {
+    if (paymentMode === 'klarna') {
+      const totalWithInterest = total * Math.pow(1 + monthlyRate, months);
+      return (totalWithInterest / numUsers).toFixed(2);
+    }
+    return (total / numUsers).toFixed(2);
+  };
+
+  const getPerPersonMonthly = (total) => {
+    if (paymentMode !== 'klarna') return null;
+    const totalWithInterest = total * Math.pow(1 + monthlyRate, months);
+    return (totalWithInterest / months / numUsers).toFixed(2);
+  };
+
   const getTopVoteCount = () => {
     const voteCounts = Object.values(votes);
     return voteCounts.length > 0 ? Math.max(...voteCounts) : 0;
@@ -34,7 +66,51 @@ function HouseSelection() {
   return (
     <div className="max-w-6xl mx-auto mt-8 p-4">
       <h1 className="section-title">🏡 House Selection</h1>
-      <p className="text-sm text-gray-500 mb-6">{timeRemaining}</p>
+      <p className="text-sm text-gray-500 mb-4">{timeRemaining}</p>
+
+      <div className="mb-6 space-y-2">
+        <div className="flex items-center space-x-3">
+          <label className="text-sm font-medium text-gray-700">Payment Plan:</label>
+          <button
+            className={`px-3 py-1 rounded border text-sm ${
+              paymentMode === 'full' ? 'bg-purple-600 text-white' : 'bg-gray-100'
+            }`}
+            onClick={() => setPaymentMode('full')}
+          >
+            Pay in Full
+          </button>
+          <button
+            className={`px-3 py-1 rounded border text-sm ${
+              paymentMode === 'klarna' ? 'bg-purple-600 text-white' : 'bg-gray-100'
+            }`}
+            onClick={() => setPaymentMode('klarna')}
+          >
+            Klarna
+          </button>
+        </div>
+
+        {paymentMode === 'klarna' && (
+          <div className="flex items-center space-x-3">
+            <label className="text-sm font-medium text-gray-700">Monthly Plan:</label>
+            <button
+              className={`px-3 py-1 rounded border text-sm ${
+                months === 6 ? 'bg-purple-600 text-white' : 'bg-gray-100'
+              }`}
+              onClick={() => setMonths(6)}
+            >
+              6 months
+            </button>
+            <button
+              className={`px-3 py-1 rounded border text-sm ${
+                months === 12 ? 'bg-purple-600 text-white' : 'bg-gray-100'
+              }`}
+              onClick={() => setMonths(12)}
+            >
+              12 months
+            </button>
+          </div>
+        )}
+      </div>
 
       {!username ? (
         <div className="bg-yellow-100 border border-yellow-300 text-yellow-800 p-4 rounded mb-6">
@@ -65,7 +141,7 @@ function HouseSelection() {
             {sortedHouses.map((house) => {
               const topVotes = getTopVoteCount();
               const isTop = (votes[house.id] || 0) === topVotes && topVotes > 0;
-              const isVoted = votedIds.includes(house.id);
+              const isVoted = Array.isArray(votedIds) && votedIds.includes(house.id);
 
               return (
                 <div
@@ -81,12 +157,26 @@ function HouseSelection() {
                   />
                   <h2 className="text-xl font-semibold text-purple-800">{house.nickname}</h2>
                   <p className="text-sm text-gray-600 mb-2">{house.summary}</p>
+
                   <p className="text-sm mb-1">
                     <strong>Total Cost:</strong> ${house.totalCost.toLocaleString()}
                   </p>
                   <p className="text-sm mb-1">
                     <strong>Per Person:</strong> ${getPerPersonCost(house.totalCost)}
                   </p>
+
+                  {paymentMode === 'klarna' && (
+                    <>
+                      <p className="text-sm mb-2">
+                        <strong>Klarna {months}mo/pp:</strong> ${getPerPersonMonthly(house.totalCost)}
+                      </p>
+                      <div className="inline-flex items-center text-xs text-purple-700 bg-purple-100 px-2 py-0.5 rounded mb-2">
+                        <img src="/icons/klarna.svg" alt="Klarna" className="w-4 h-4 mr-1" />
+                        Klarna estimate includes ~5.99% APR
+                      </div>
+                    </>
+                  )}
+
                   <a
                     href={house.url}
                     target="_blank"
@@ -107,7 +197,18 @@ function HouseSelection() {
                           ? 'opacity-60 bg-gray-400 cursor-not-allowed'
                           : ''
                       }`}
-                      onClick={() => handleVote(house.id, votingClosed)}
+                      onClick={async () => {
+                        const alreadyVoted = votedIds.includes(house.id);
+                        await handleVote(house.id, votingClosed);
+
+                        if (!alreadyVoted && !votingClosed) {
+                          confetti({
+                            particleCount: 80,
+                            spread: 70,
+                            origin: { y: 0.6 }
+                          });
+                        }
+                      }}
                       disabled={votingClosed || !allowedUsers.includes(userKey)}
                     >
                       {votingClosed ? 'Voting Closed' : isVoted ? 'Undo Vote' : 'Vote'}
